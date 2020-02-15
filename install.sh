@@ -1,14 +1,14 @@
 #!/bin/bash
 
 radare2 () {
-	git clone https://github.com/radareorg/radare2 ~/tools/radare2
-	~/tools/radare2/sys/user.sh
+    git clone https://github.com/radareorg/radare2 ~/tools/radare2
+    ~/tools/radare2/sys/user.sh
 
-	if ! grep -q SomeString ~/.profile; then
+    if ! grep -q SomeString ~/.profile; then
         echo "bin is in path"
-	fi
+    fi
 
-	source ~/.profile
+    source ~/.profile
 
     if [ "$1" = "r2ghidra-dec" ]; then
         r2pm init
@@ -19,35 +19,35 @@ radare2 () {
 
 cutter () {
     curl -L https://github.com/radareorg/cutter/releases/download/v1.10.0/Cutter-v1.10.0-x64.Linux.appimage -o ~/bin/Cutter
-	chmod +x ~/bin/Cutter
+    chmod +x ~/bin/Cutter
 }
 
 ghidra () {
-	cd ~/tools
+    cd ~/tools
 
-	curl -LO https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.5%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.5_10.tar.gz
-	tar xvf OpenJDK11U-jdk_x64_linux_hotspot_11.0.5_10.tar.gz
+    curl -LO https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.5%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.5_10.tar.gz
+    tar xvf OpenJDK11U-jdk_x64_linux_hotspot_11.0.5_10.tar.gz
 
-	if ! grep -q SomeString ~/.profile; then
+    if ! grep -q SomeString ~/.profile; then
         echo "jdk is in path"
-	fi
+    fi
 
-	echo '
-	if [ -d "$HOME/tools/jdk-11.0.5+10/bin" ] ; then
-	    PATH="$HOME/tools/jdk-11.0.5+10/bin:$PATH"
-	fi' >> ~/.profile
+    echo '
+    if [ -d "$HOME/tools/jdk-11.0.5+10/bin" ] ; then
+        PATH="$HOME/tools/jdk-11.0.5+10/bin:$PATH"
+    fi' >> ~/.profile
 
-	source ~/.profile
+    source ~/.profile
 
-	curl -O https://ghidra-sre.org/ghidra_9.1.1_PUBLIC_20191218.zip
-	7z x ghidra_9.1.1_PUBLIC_20191218.zip
+    curl -O https://ghidra-sre.org/ghidra_9.1.1_PUBLIC_20191218.zip
+    7z x ghidra_9.1.1_PUBLIC_20191218.zip
 }
 
 install () {
-	sudo apt install `cat ubuntu/packages`
+    sudo apt install `cat ubuntu/packages`
 
-	[ -f ~/bin ] || mkdir ~/bin
-	[ -f ~/tools ] || mkdir ~/tools
+    [ -f ~/bin ] || mkdir ~/bin
+    [ -f ~/tools ] || mkdir ~/tools
 
     PS3='Select tools to install: '
     options=("radare2" "Cutter (r2gui)" "Ghidra" "Quit")
