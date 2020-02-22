@@ -5,6 +5,7 @@ emacs
 flex
 gcc-c++-x86_64-linux-gnu
 gdb
+git
 ltrace
 make
 neovim
