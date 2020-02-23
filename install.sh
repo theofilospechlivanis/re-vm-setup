@@ -1,7 +1,7 @@
 #!/bin/bash
 
 radare2 () {
-    if [ ! -d "$HOME/tools/radare2" ]; then
+    if [ ! -d ~/tools/radare2 ]; then
         git clone https://github.com/radareorg/radare2 ~/tools/radare2
     fi
 
@@ -10,17 +10,17 @@ radare2 () {
     if ! grep -q 'if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi' ~/.profile; then
+        ~/tools/radare2/sys/user.sh
         echo '
 if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi' >> ~/.profile
         source ~/.profile
-        ~/tools/radare2/sys/user.sh
     fi
 }
 
 radare2-plugins () {
-    if [ ! -d "$HOME/.local/share/radare2/r2pm/git/radare2-pm" ]; then
+    if [ ! -d ~/.local/share/radare2/r2pm/git/radare2-pm ]; then
         r2pm init
     fi
 
@@ -29,28 +29,56 @@ radare2-plugins () {
 }
 
 cutter () {
-    curl -L https://github.com/radareorg/cutter/releases/download/v1.10.1/Cutter-v1.10.1-x64.Linux.AppImage -o ~/bin/Cutter
-    chmod +x ~/bin/Cutter
+    cutterVersion="Cutter-v1.10.1-x64.Linux.AppImage"
+    cutterUrl="https://github.com/radareorg/cutter/releases/download/v1.10.1/$cutterVersion"
+
+    if [ ! -f ~/tools/"$cutterVersion" ]; then
+        cd ~/tools
+        curl -LO "$cutterUrl"
+        ln -sf "$cutterVersion" ~/bin/Cutter
+#        chmod +x ~/bin/Cutter
+    fi
 }
 
-ghidra () {
+openjdk () {
+    openjdkVersion="OpenJDK11U-jdk_x64_linux_hotspot_11.0.6_10.tar.gz"
+    openjdkUrl="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/$openjdkVersion"
+
     cd ~/tools
 
-    curl -LO https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.6_10.tar.gz
-    tar xvf OpenJDK11U-jdk_x64_linux_hotspot_11.0.6_10.tar.gz
+    if [ ! -f ~/tools/"$openjdkVersion" ]; then
+        curl -LO "$openjdkUrl"
+    fi
 
-    if ! grep -q 'if [ -d "$HOME/tools/jdk-11.0.6+10/bin" ] ; then
-    PATH="$HOME/tools/jdk-11.0.6+10/bin:$PATH"
+    touch ~/.profile
+
+    if ! grep -q 'if [ -d "$HOME/tools/jdk\-11\.0\.6\+10/bin" ] ; then
+    PATH="$HOME/tools/jdk\-11\.0\.6\+10/bin:$PATH"
 fi' ~/.profile; then
+        tar xvf "$openjdkVersion"
         echo '
 if [ -d "$HOME/tools/jdk-11.0.6+10/bin" ] ; then
     PATH="$HOME/tools/jdk-11.0.6+10/bin:$PATH"
 fi' >> ~/.profile
         source ~/.profile
     fi
+}
 
-    curl -O https://ghidra-sre.org/ghidra_9.1.2_PUBLIC_20200212.zip
-    7z x ghidra_9.1.2_PUBLIC_20200212.zip
+ghidra () {
+    ghidraVersion="ghidra_9.1.2_PUBLIC_20200212.zip"
+    ghidraUrl="https://ghidra-sre.org/$ghidraVersion"
+    ghidraName="ghidra_9.1.2_PUBLIC"
+
+    openjdk
+
+    if [ ! -f ~/tools/"$ghidraVersion" ]; then
+        curl -O "$ghidraUrl"
+    fi
+
+    if [ ! -f ~/tools/"$ghidraName" ]; then
+        7z x "$ghidraVersion"
+        ln -sf ~/tools/"$ghidraName"/ghidraRun ~/bin/Ghidra
+    fi
 }
 
 install () {
