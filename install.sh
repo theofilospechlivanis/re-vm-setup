@@ -1,25 +1,31 @@
 #!/bin/bash
 
-radare2 () {
+install-radare2 () {
     if [ ! -d ~/tools/radare2 ]; then
         git clone https://github.com/radareorg/radare2 ~/tools/radare2
     fi
 
     touch ~/.profile
 
-    if ! grep -q 'if [ -d "$HOME/bin" ] ; then
+    if ! fgrep -q 'if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi' ~/.profile; then
         ~/tools/radare2/sys/user.sh
-        echo '
-if [ -d "$HOME/bin" ] ; then
-    PATH="$HOME/bin:$PATH"
-fi' >> ~/.profile
+        printf '\nif [ -d "$HOME/bin" ] ; then\n    PATH="$HOME/bin:$PATH"\nfi' >> ~/.profile
         source ~/.profile
     fi
 }
 
-radare2-plugins () {
+update-radare2 () {
+    if [ -d ~/tools/radare2 ]; then
+        cd ~/tools/radare2
+        sys/user.sh
+    else
+        printf 'Error: radare2 is not installed.'
+    fi
+}
+
+install-radare2-plugin () {
     if [ ! -d ~/.local/share/radare2/r2pm/git/radare2-pm ]; then
         r2pm init
     fi
@@ -28,19 +34,25 @@ radare2-plugins () {
     r2pm install "$1"
 }
 
-cutter () {
-    cutterVersion="Cutter-v1.10.1-x64.Linux.AppImage"
-    cutterUrl="https://github.com/radareorg/cutter/releases/download/v1.10.1/$cutterVersion"
+install-radare2-cfg () {
+    printf 'eco zenburn\ne asm.ucase = true\ne scr.color = 3\ne scr.utf8 = true\ne scr.utf8.curvy = true' > ~/.radare2rc
+
+    printf '{\"Title\":\"agf\",\"Cmd\":\"agf\",\"x\":0,\"y\":1,\"w\":69,\"h\":56},{\"Title\":\"pdc\",\"Cmd\":\"pdc\",\"x\":68,\"y\":1,\"w\":72,\"h\":29},{\"Title\":\"pxa\",\"Cmd\":\"xc \",\"x\":139,\"y\":1,\"w\":72,\"h\":29},{\"Title\":\"dr\",\"Cmd\":\"dr\",\"x\":68,\"y\":29,\"w\":40,\"h\":28},{\"Title\":\"drd\",\"Cmd\":\"drd\",\"x\":107,\"y\":29,\"w\":45,\"h\":28},{\"Title\":\"afl\",\"Cmd\":\"afl\",\"x\":151,\"y\":29,\"w\":60,\"h\":28}' > ~/.local/share/radare2/.r2panels/my-layout
+}
+
+install-cutter () {
+    cutterVersion="Cutter-v1.10.2-x64.Linux.AppImage"
+    cutterUrl="https://github.com/radareorg/cutter/releases/download/v1.10.2/$cutterVersion"
 
     if [ ! -f ~/tools/"$cutterVersion" ]; then
         cd ~/tools
         curl -LO "$cutterUrl"
         ln -sf "$cutterVersion" ~/bin/Cutter
-#        chmod +x ~/bin/Cutter
+        chmod +x ~/bin/Cutter
     fi
 }
 
-openjdk () {
+install-openjdk () {
     openjdkVersion="OpenJDK11U-jdk_x64_linux_hotspot_11.0.6_10.tar.gz"
     openjdkUrl="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/$openjdkVersion"
 
@@ -52,32 +64,30 @@ openjdk () {
 
     touch ~/.profile
 
-    if ! grep -q 'if [ -d "$HOME/tools/jdk\-11\.0\.6\+10/bin" ] ; then
-    PATH="$HOME/tools/jdk\-11\.0\.6\+10/bin:$PATH"
+    if ! fgrep -q 'if [ -d "$HOME/tools/jdk-11.0.6+10/bin" ] ; then
+    PATH="$HOME/tools/jdk-11.0.6+10/bin:$PATH"
 fi' ~/.profile; then
         tar xvf "$openjdkVersion"
-        echo '
-if [ -d "$HOME/tools/jdk-11.0.6+10/bin" ] ; then
-    PATH="$HOME/tools/jdk-11.0.6+10/bin:$PATH"
-fi' >> ~/.profile
+        printf '\nif [ -d "$HOME/tools/jdk-11.0.6+10/bin" ] ; then\n    PATH="$HOME/tools/jdk-11.0.6+10/bin:$PATH"\nfi' >> ~/.profile
         source ~/.profile
     fi
 }
 
-ghidra () {
-    ghidraVersion="ghidra_9.1.2_PUBLIC_20200212.zip"
-    ghidraUrl="https://ghidra-sre.org/$ghidraVersion"
+install-ghidra () {
     ghidraName="ghidra_9.1.2_PUBLIC"
+    ghidraVersion="{$ghidraName}_20200212.zip"
+    ghidraUrl="https://ghidra-sre.org/{$ghidraVersion}"
 
-    openjdk
+    install-openjdk
 
-    if [ ! -f ~/tools/"$ghidraVersion" ]; then
-        curl -O "$ghidraUrl"
+    if [ ! -f ~/tools/"{$ghidraName}" ]; then
+        curl -O "{$ghidraUrl}"
     fi
 
-    if [ ! -f ~/tools/"$ghidraName" ]; then
-        7z x "$ghidraVersion"
-        ln -sf ~/tools/"$ghidraName"/ghidraRun ~/bin/Ghidra
+    if [ ! -f ~/tools/"{$ghidraName}" ]; then
+        7z x "{$ghidraVersion}"
+        ln -sf ~/tools/"{$ghidraName}"/ghidraRun ~/bin/Ghidra
+        chmod +x ~/bin/Ghidra
     fi
 }
 
@@ -100,7 +110,7 @@ install () {
         do
             case $opt in
                 "radare2")
-                    radare2
+                    install-radare2
                     while true
                     do
                         options=("Ghidra Decompiler" "Retargetable Decompiler" "Quit")
@@ -110,10 +120,10 @@ install () {
                         do
                             case $opt in
                                 "Ghidra Decompiler")
-                                    radare2-plugins r2ghidra-dec
+                                    install-radare2-plugin r2ghidra-dec
                                     ;;
                                 "Retargetable Decompiler")
-                                    radare2-plugins retdec-r2plugin
+                                    install-radare2-plugin retdec-r2plugin
                                     ;;
                                 "Quit")
                                     break 2
@@ -124,10 +134,10 @@ install () {
                     done
                     ;;
                 "Cutter (r2gui)")
-                    cutter
+                    install-cutter
                     ;;
                 "Ghidra")
-                    ghidra
+                    install-ghidra
                     ;;
                 "Quit")
                     break 2
@@ -139,7 +149,7 @@ install () {
 }
 
 update () {
-    echo "Update"
+    update-radare2
 }
 
 remove () {
